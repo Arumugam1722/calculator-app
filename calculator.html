@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #ffffff;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .calculator {
+            background: #000000;
+            padding: 20px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .calculator form input {
+            border: 0;
+            outline: 0;
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            box-shadow: 8px 15px rgba(255, 255, 255, 0.1), 5px 5px 15px rgba(0, 0, 0, 0.2);
+            background: transparent;
+            font-size: 20px;
+            color: #fff;
+            cursor: pointer;
+            margin: 10px;
+        }
+        form .display {
+            display: flex;
+            justify-content: flex-end;
+            margin: 20px 0;
+        }
+        form .display input {
+            text-align: right;
+            flex: 1;
+            font-size: 45px;
+            box-shadow: none;
+        }
+        .history {
+            margin-top: 20px;
+            background: #333;
+            color: #fff;
+            padding: 10px;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 260px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <form name="calc">
+            <div class="display">
+                <input type="text" name="display" id="display">
+            </div>
+            <div>
+                <input type="button" value="AC" onclick="display.value = ''">
+                <input type="button" value="DE" onclick="display.value = display.value.toString().slice(0,-1)">
+                <input type="button" value="." onclick="display.value += '.'">
+                <input type="button" value="/" onclick="display.value += '/'">
+            </div>
+            <div>
+                <input type="button" value="7" onclick="display.value += '7'">
+                <input type="button" value="8" onclick="display.value += '8'">
+                <input type="button" value="9" onclick="display.value += '9'">
+                <input type="button" value="*" onclick="display.value += '*'">
+            </div>
+            <div>
+                <input type="button" value="4" onclick="display.value += '4'">
+                <input type="button" value="5" onclick="display.value += '5'">
+                <input type="button" value="6" onclick="display.value += '6'">
+                <input type="button" value="-" onclick="display.value += '-'">
+            </div>
+            <div>
+                <input type="button" value="1" onclick="display.value += '1'">
+                <input type="button" value="2" onclick="display.value += '2'">
+                <input type="button" value="3" onclick="display.value += '3'">
+                <input type="button" value="+" onclick="display.value += '+'">
+            </div>
+            <div>
+                <input type="button" value="(" onclick="display.value += '('">
+                <input type="button" value="0" onclick="display.value += '0'">
+                <input type="button" value=")" onclick="display.value += ')'">
+                <input type="button" value="=" onclick="calculate()" class="equal">  
+            </div>
+        </form>
+        <div class="history" id="history">
+            <h3>History</h3>
+            <ul id="historyList"></ul>
+        </div>
+    </div>
+
+    <script>
+        async function calculate() {
+            try {
+                const display = document.calc.display;
+                const expression = display.value;
+                const response = await fetch('/calculate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ expression })
+                });
+                const result = await response.json();
+                if (response.ok) {
+                    display.value = result.result;
+                    loadHistory();
+                } else {
+                    display.value = 'Error';
+                }
+            } catch (e) {
+                display.value = 'Error';
+            }
+        }
+
+        async function loadHistory() {
+            try {
+                const response = await fetch('/history');
+                const data = await response.json();
+                const historyList = document.getElementById('historyList');
+                historyList.innerHTML = '';
+                data.history.forEach(item => {
+                    const historyItem = document.createElement('li');
+                    historyItem.textContent = `${item.expression} = ${item.result}`;
+                    historyList.appendChild(historyItem);
+                });
+            } catch (e) {
+                console.error('Failed to load history', e);
+            }
+        }
+
+        // Load history on page load
+        document.addEventListener('DOMContentLoaded', loadHistory);
+    </script>
+</body>
+</html>
+
+
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #ffffff;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .calculator {
+            background: #000000;
+            padding: 20px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .calculator form input {
+            border: 0;
+            outline: 0;
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            box-shadow: 8px 15px rgba(255, 255, 255, 0.1), 5px 5px 15px rgba(0, 0, 0, 0.2);
+            background: transparent;
+            font-size: 20px;
+            color: #fff;
+            cursor: pointer;
+            margin: 10px;
+        }
+        form .display {
+            display: flex;
+            justify-content: flex-end;
+            margin: 20px 0;
+        }
+        form .display input {
+            text-align: right;
+            flex: 1;
+            font-size: 45px;
+            box-shadow: none;
+        }
+        .history {
+            margin-top: 20px;
+            background: #333;
+            color: #fff;
+            padding: 10px;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 260px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <form name="calc">
+            <div class="display">
+                <input type="text" name="display" id="display">
+            </div>
+            <div>
+                <input type="button" value="AC" onclick="display.value = ''">
+                <input type="button" value="DE" onclick="display.value = display.value.toString().slice(0,-1)">
+                <input type="button" value="." onclick="display.value += '.'">
+                <input type="button" value="/" onclick="display.value += '/'">
+            </div>
+            <div>
+                <input type="button" value="7" onclick="display.value += '7'">
+                <input type="button" value="8" onclick="display.value += '8'">
+                <input type="button" value="9" onclick="display.value += '9'">
+                <input type="button" value="*" onclick="display.value += '*'">
+            </div>
+            <div>
+                <input type="button" value="4" onclick="display.value += '4'">
+                <input type="button" value="5" onclick="display.value += '5'">
+                <input type="button" value="6" onclick="display.value += '6'">
+                <input type="button" value="-" onclick="display.value += '-'">
+            </div>
+            <div>
+                <input type="button" value="1" onclick="display.value += '1'">
+                <input type="button" value="2" onclick="display.value += '2'">
+                <input type="button" value="3" onclick="display.value += '3'">
+                <input type="button" value="+" onclick="display.value += '+'">
+            </div>
+            <div>
+                <input type="button" value="(" onclick="display.value += '('">
+                <input type="button" value="0" onclick="display.value += '0'">
+                <input type="button" value=")" onclick="display.value += ')'">
+                <input type="button" value="=" onclick="calculate2()" class="equal">  
+            </div>
+        </form>
+        <div class="history" id="history">
+            <h3>History</h3>
+            <ul id="historyList"></ul>
+        </div>
+    </div>
+
+    <script>
+        async function calculate2() {
+            try {
+                const display = document.calc.display;
+                const expression = display.value;
+                const response = await fetch('/calculate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ expression })
+                });
+                const result = await response.json();
+                if (response.ok) {
+                    const historyList = document.getElementById('historyList');
+                    const historyItem = document.createElement('li');
+                    historyItem.textContent = `${expression} = ${result.result}`;
+                    historyList.appendChild(historyItem);
+                    display.value = result.result;
+                } else {
+                    display.value = 'Error';
+                }
+            } catch (e) {
+                display.value = 'Error';
+            }
+        }
+    </script>
+</body>
+</html> -->
